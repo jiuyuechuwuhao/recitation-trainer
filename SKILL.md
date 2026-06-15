@@ -426,6 +426,10 @@ Only run this step if the user explicitly asks to deploy. Ask first:
 #### Option A · GitHub Pages (default, accessible in China)
 
 ```bash
+# 0. (one-time) Set up SSH for GitHub — each user generates their OWN key
+ssh-keygen -t ed25519 -C "your.email@example.com"
+cat ~/.ssh/id_ed25519.pub  # Copy the output → paste at GitHub → Settings → SSH Keys → New
+
 # 1. Create a GitHub repo (public) and push the product folder
 cd recitation-trainer-product/
 git init
@@ -433,7 +437,7 @@ git checkout -b main
 git add .
 git commit -m "Initial recitation trainer deploy"
 git remote add origin git@github.com:YOUR_USERNAME/YOUR_REPO.git
-git push -u origin main  # Uses SSH — if SSH not configured, set up with: ssh-keygen -t ed25519 -C "your@email.com" && cat ~/.ssh/id_ed25519.pub (add to GitHub Settings → SSH Keys)
+git push -u origin main
 
 # 2. Enable GitHub Pages via gh CLI
 gh repo edit --pages-source-branch main --pages-source-path /
