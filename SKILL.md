@@ -141,15 +141,19 @@ The agent reads this output and generates `director_script.md` directly — the 
 #### Branch 1B: From PDF (user has a paper/article, no slides)
 
 ```bash
-# Step 1B.i: Extract text from PDF
+# Step 1B.i: Get page count (MANDATORY — this determines the script length)
+PAGES=$(pdfinfo paper.pdf | grep Pages | awk '{print $2}')
+echo "PDF has $PAGES pages — script will have exactly $PAGES slides"
+
+# Step 1B.ii: Extract text from PDF
 pdftotext -layout paper.pdf source_text.txt
 ```
 
 The agent reads `source_text.txt` and:
 
-1. **Designs a slide outline** — how many slides the presentation should have, what each slide covers
-2. **Generates `director_script.md`** with the same format as 1A
-3. **Proceeds directly to Step 2** — `pdftoppm` exports slide images from the PDF. No PPTX is needed for Branch B.
+1. **MUST use the PDF page count** — the director script has exactly N slides where N = PDF pages. One slide per PDF page, in order. DO NOT summarize, consolidate, or reduce.
+2. **Generates `director_script.md`** — each slide's title comes from the page content, each slide's `full_text` is the oral delivery for that page. Same format as Branch 1A.
+3. **Proceeds directly to Step 2** — `pdftoppm` exports slide images (N pages → N PNGs).
 
 #### Branch 1C: From nothing (just a topic)
 
