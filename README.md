@@ -37,8 +37,15 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Click%20to%20view-blue)](https://jiuyuechuwuhao.github.io/ufo-presentation/recitation_trainer.html)
 
-> 实际案例：[Disclosure Day 带读训练器](https://jiuyuechuwuhao.github.io/ufo-presentation/recitation_trainer.html)（21 页学术英文 Pre）
+> 实际案例：Disclosure Day 英语 Pre（21 页学术英文）
 
+### 🖥️ 桌面端
+
+![桌面端截图](assets/screenshots/desktop.png)
+
+### 📱 移动端
+
+![移动端截图](assets/screenshots/mobile.png)
 ## 🛠️ 快速开始
 
 ### 安装
