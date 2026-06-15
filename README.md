@@ -3,8 +3,9 @@
 > 一款面向中国博士生的英文 Presentation 带读训练工具。输入 PPT，输出一个带语音跟读、逐句高亮、语速可控的交互式网页。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Codex Ready](https://img.shields.io/badge/Codex-✓-blue)](https://github.com/jiuyuechuwuhao/ppt-prepal)
-[![Claude Code Ready](https://img.shields.io/badge/Claude%20Code-✓-orange)](https://github.com/jiuyuechuwuhao/ppt-prepal)
+[![GitHub stars](https://img.shields.io/github/stars/jiuyuechuwuhao/ppt-prepal-skills?style=flat-square)](https://github.com/jiuyuechuwuhao/ppt-prepal-skills/stargazers)
+[![Codex Ready](https://img.shields.io/badge/Codex-✓-blue)](https://github.com/jiuyuechuwuhao/ppt-prepal-skills)
+[![Claude Code Ready](https://img.shields.io/badge/Claude%20Code-✓-orange)](https://github.com/jiuyuechuwuhao/ppt-prepal-skills)
 [![Gemini CLI Ready](https://img.shields.io/badge/Gemini%20CLI-✓-purple)]()
 [![OpenCode Ready](https://img.shields.io/badge/OpenCode-✓-teal)]()
 [![Hermes Ready](https://img.shields.io/badge/Hermes-✓-gold)]()
@@ -42,17 +43,27 @@
 
 ### 安装
 
+**方式一：一键安装（推荐）**
+
+```bash
+npx skills add https://github.com/jiuyuechuwuhao/ppt-prepal-skills
+```
+
+**方式二：手动安装**
+
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/jiuyuechuwuhao/ppt-prepal.git
-cd ppt-prepal
+git clone https://github.com/jiuyuechuwuhao/ppt-prepal-skills.git
+cd ppt-prepal-skills
 
 # 2. 一键环境检测 + 自动安装
 python3 scripts/check_env.py
 # 自动检测 OS、安装缺失的 Python 包、报告系统工具状态
 
-# 3. 在智能体中安装 Skill
-# 下载 Releases 中的 .skill 包导入 Codex / Claude Code / Gemini CLI 等
+# 3. 将技能目录移动到智能体的 skills 目录下
+# Codex:     ~/.codex/skills/ppt-prepal-skills/
+# Claude Code: ~/.claude/skills/ppt-prepal-skills/
+# Gemini CLI:  ~/.gemini/skills/ppt-prepal-skills/
 ```
 
 **支持的操作系统：** macOS ✅ | Linux ✅ | Windows ⚠️（手动导出PPT截图）
