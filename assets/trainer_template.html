@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disclosure Day — 带读背诵训练</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --card-bg: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-dim: #8b949e;
+  --accent: #58a6ff;
+  --accent-dim: #1f6feb33;
+  --highlight: #d2a8ff;
+  --highlight-bg: #d2a8ff22;
+  --playing-bg: #1f6feb11;
+  --radius: 6px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Global controls bar */
+.controls-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.controls-bar h1 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.speed-control input[type="range"] {
+  width: 120px;
+  accent-color: var(--accent);
+}
+
+.speed-control .speed-val {
+  min-width: 40px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.nav-buttons button {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.nav-buttons button:hover {
+  background: var(--border);
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px 20px 60px;
+}
+
+/* Slide card */
+.slide-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.slide-card.playing {
+  border-color: var(--accent);
+  background: var(--playing-bg);
+}
+
+.slide-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s;
+}
+.slide-header:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.slide-num {
+  background: var(--accent-dim);
+  color: var(--accent);
+  min-width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.slide-title {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.slide-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-play {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 5px 14px;
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity 0.15s;
+}
+.btn-play:hover { opacity: 0.85; }
+.btn-play.playing {
+  background: #da3633;
+}
+.btn-play svg { width: 14px; height: 14px; }
+
+.chevron {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  transition: transform 0.2s;
+  width: 20px;
+  text-align: center;
+}
+.slide-card.expanded .chevron {
+  transform: rotate(90deg);
+}
+
+/* Slide body */
+.slide-body {
+  display: none;
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
+}
+.slide-card.expanded .slide-body {
+  display: block;
+}
+
+/* PPT preview placeholder */
+.ppt-preview {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin: 12px 0 16px;
+  position: relative;
+  overflow: hidden;
+  line-height: 0;
+}
+.ppt-preview img {
+  display: block;
+  width: 100%;
+}
+.ppt-preview .label {
+  position: absolute;
+  top: 6px;
+  left: 12px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  background: rgba(13,17,23,0.8);
+  padding: 2px 8px;
+  border-radius: 3px;
+  z-index: 1;
+}
+.ppt-preview .label {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+/* Beat table */
+.beats-section {
+  margin-bottom: 12px;
+}
+.beats-section h3 {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.beat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.beat-table th {
+  text-align: left;
+  padding: 6px 8px;
+  color: var(--text-dim);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+}
+.beat-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid rgba(48,54,61,0.4);
+  vertical-align: top;
+}
+.beat-table .beat-num {
+  color: var(--text-dim);
+  width: 32px;
+  font-variant-numeric: tabular-nums;
+}
+.beat-table .beat-english {
+  color: var(--text);
+  font-weight: 500;
+}
+.beat-table .beat-action {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  font-style: italic;
+}
+.beat-table td.beat-ppt {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
+/* Flowing full text */
+.flow-section {
+  margin-top: 12px;
+}
+.flow-section h3 {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.flow-text {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-size: 1.05rem;
+  line-height: 2;
+  letter-spacing: 0.01em;
+}
+
+.flow-text .sentence {
+  padding: 3px 6px;
+  border-radius: 3px;
+  transition: background 0.15s, color 0.15s;
+  margin: 0 1px;
+}
+.flow-text .sentence.active {
+  background: var(--highlight-bg);
+  color: var(--highlight);
+  font-weight: 500;
+}
+
+/* Loading / empty state */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-dim);
+}
+
+
+.voice-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.voice-control select {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.voice-control select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .controls-bar {
+    padding: 8px 14px;
+    gap: 10px;
+  }
+  .controls-bar h1 { font-size: 0.85rem; }
+  .beat-table { font-size: 0.75rem; }
+  .beat-table th, .beat-table td { padding: 4px 5px; }
+  .flow-text { font-size: 0.95rem; padding: 10px 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="controls-bar">
+  <h1>&#x1F47D; Disclosure Day · 带读训练</h1>
+  <div class="speed-control">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>
+    <input type="range" id="speedSlider" min="0.5" max="2.0" step="0.05" value="1.0">
+    <span class="speed-val" id="speedLabel">1.0x</span>
+  </div>
+  <div class="voice-control" id="voiceControl" style="display:none">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    <select id="voiceSelector">
+      <option value="">Default</option>
+    </select>
+  </div>
+  <div class="nav-buttons">
+    <button onclick="collapseAll()">Fold All</button>
+    <button onclick="expandAll()">Unfold All</button>
+  </div>
+</div>
+
+<div class="container" id="container">
+</div>
+
+<script>
+// Slide data
+const SLIDES = [{"num": 1, "title": "COVER", "beats": [{"beat": 1, "ppt_guide": "面向观众", "english": "Hi, everyone.", "action": "微笑，停一拍"}, {"beat": 2, "ppt_guide": "手指向大标题", "english": "Today — \"Disclosure Day.\"", "action": "单手指屏幕"}, {"beat": 3, "ppt_guide": "手指点问号", "english": "But — question mark.", "action": ""}, {"beat": 4, "ppt_guide": "看观众", "english": "Is it really happening?", "action": ""}, {"beat": 5, "ppt_guide": "手从左扫到右", "english": "Two sides. Both — right now.", "action": ""}, {"beat": 6, "ppt_guide": "手指向左框", "english": "Government secrets — suddenly public.", "action": ""}, {"beat": 7, "ppt_guide": "手指向右框", "english": "A Spielberg movie — in theaters right now.", "action": ""}, {"beat": 8, "ppt_guide": "双手合拢", "english": "Same day.", "action": ""}, {"beat": 9, "ppt_guide": "看观众", "english": "Coincidence? Or the same story?", "action": ""}, {"beat": 10, "ppt_guide": "转身切页", "english": "Let's find out.", "action": ""}], "full_text": "Hi, everyone. Today — \"Disclosure Day.\" But — question mark. Is it really happening? Two sides. Both — right now. Government secrets — suddenly public. A Spielberg movie — in theaters right now. Same day. Coincidence? Or the same story? Let's find out.  ---"}, {"num": 2, "title": "SECTION 1 TRANSITION", "beats": [{"beat": 1, "ppt_guide": "手指向大日期", "english": "One date.", "action": "单手指屏幕"}, {"beat": 2, "ppt_guide": "停顿，看观众", "english": "May 8th, 2026.", "action": "缓慢念出来"}, {"beat": 3, "ppt_guide": "手从日期滑到副标题", "english": "Decades of silence — just ended.", "action": "手向下划"}], "full_text": "One date. May 8th, 2026. Decades of silence — just ended.  ---"}, {"num": 3, "title": "What Began on This Day?", "beats": [{"beat": 1, "ppt_guide": "手指向标题", "english": "So, what happened?", "action": "反问语气"}, {"beat": 2, "ppt_guide": "手扫过左侧 timeline", "english": "Three releases. 298 files. All public.", "action": "手从上往下滑"}, {"beat": 3, "ppt_guide": "看观众", "english": "FBI, CIA, even NASA audio.", "action": "PPT上没有，补充信息"}, {"beat": 4, "ppt_guide": "手指向时间线底部数字", "english": "The whole world watching. 1.7 billion hits.", "action": "张开手表示巨大"}, {"beat": 5, "ppt_guide": "手转向右侧 TERMINOLOGY", "english": "But notice one word.", "action": "引导看右边"}, {"beat": 6, "ppt_guide": "手指 UAP", "english": "Not \"UFO.\" Instead, \"UAP.\"", "action": "强调对比"}, {"beat": 7, "ppt_guide": "手势", "english": "Why? Not always flying. Not always objects.", "action": "摇头解释"}, {"beat": 8, "ppt_guide": "看观众", "english": "\"UFO\" is Hollywood. \"UAP\" is official. Remember this.", "action": "手指太阳穴"}], "full_text": "So, what happened? Three releases. 298 files. All public. FBI, CIA, even NASA audio. The whole world watching. 1.7 billion hits. But notice one word. Not \"UFO.\" Instead, \"UAP.\" Why? Not always flying. Not always objects. \"UFO\" is Hollywood. \"UAP\" is official. Remember this.  ---"}, {"num": 4, "title": "PR46: East China Sea Report", "beats": [{"beat": 1, "ppt_guide": "手指向地图位置", "english": "Now — why should we care?", "action": "反问语气"}, {"beat": 2, "ppt_guide": "手指向左侧 FILE 区域", "english": "One file. East China Sea. Right next to us.", "action": "指左边"}, {"beat": 3, "ppt_guide": "看观众", "english": "Let me show you.", "action": "转身"}, {"beat": 4, "ppt_guide": "点击播放视频，手指视频下方标签", "english": "Official infrared video. Nine seconds.", "action": "点击播放"}, {"beat": 5, "ppt_guide": "沉默，让视频播放", "english": "—", "action": "站到旁边，让画面说话"}, {"beat": 6, "ppt_guide": "视频结束后，手指 STATUS", "english": "And the status? Unresolved.", "action": "指状态栏"}, {"beat": 7, "ppt_guide": "摊手", "english": "Even the military says: \"We don't know.\"", "action": "摇头"}, {"beat": 8, "ppt_guide": "手势划过页面", "english": "Not a movie. Not Weibo rumors. Real military files.", "action": "严肃语气"}], "full_text": "Now — why should we care? One file. East China Sea. Right next to us. Let me show you. Official infrared video. Nine seconds.  *[视频播放，约9秒，沉默]*  And the status? Unresolved. Even the military says: \"We don't know.\" Not a movie. Not Weibo rumors. Real military files.  ---"}, {"num": 5, "title": "Where to Explore: 3 Gateways", "beats": [{"beat": 1, "ppt_guide": "手扫过三张卡片", "english": "Three websites. All free.", "action": "手从左划到右"}, {"beat": 2, "ppt_guide": "手指第一张", "english": "This one — from the government.", "action": "指左边"}, {"beat": 3, "ppt_guide": "手指第二张", "english": "This one — easier to search.", "action": "指中间"}, {"beat": 4, "ppt_guide": "手指第三张，停顿", "english": "But this one — all in Chinese.", "action": "指右边，强调"}, {"beat": 5, "ppt_guide": "看观众", "english": "Check these out. Real military files. Your own eyes.", "action": "双手指观众"}], "full_text": "Three websites. All free. This one — from the government. This one — easier to search. But this one — all in Chinese. Check these out. Real military files. Your own eyes.  ---"}, {"num": 6, "title": "SECTION 2 TRANSITION", "beats": [{"beat": 1, "ppt_guide": "手指向大标题", "english": "OK, that's the real world. Now — the movies.", "action": "翻掌转折"}, {"beat": 2, "ppt_guide": "手指向副标题 Spielberg", "english": "A director. 49 years. One topic.", "action": "竖三根手指"}], "full_text": "OK, that's the real world. Now — the movies. A director. 49 years. One topic.  ---"}, {"num": 7, "title": "Spielberg Sci-Fi Universe: 49 Years", "beats": [{"beat": 1, "ppt_guide": "看观众", "english": "Spielberg.", "action": "揭晓 Slide 6 的悬念"}, {"beat": 2, "ppt_guide": "手指向三栏，从左到右扫", "english": "49 years. Three movies. One pattern.", "action": "手划过三张海报"}, {"beat": 3, "ppt_guide": "手指 1977", "english": "1977 — government denies everything.", "action": "指左"}, {"beat": 4, "ppt_guide": "手指 2026", "english": "2026 — government reveals everything.", "action": "指右"}, {"beat": 5, "ppt_guide": "停顿，看观众", "english": "See the shift?", "action": "挑眉"}, {"beat": 6, "ppt_guide": "手从左滑到右", "english": "From hiding — to telling.", "action": "手势：合→开"}], "full_text": "Spielberg. 49 years. Three movies. One pattern. 1977 — government denies everything. 2026 — government reveals everything. See the shift? From hiding — to telling.  ---"}, {"num": 8, "title": "Disclosure Day: Film Details", "beats": [{"beat": 1, "ppt_guide": "手指电影海报", "english": "So this new movie — what makes it different?", "action": "承接上页\"转变\""}, {"beat": 2, "ppt_guide": "手指 Spielberg 名字", "english": "Spielberg himself said it.", "action": "指导演名"}, {"beat": 3, "ppt_guide": "手指 Fandango 引言", "english": "Things he once hoped were true — are happening now.", "action": "慢，这是核心论点"}, {"beat": 4, "ppt_guide": "停顿，看观众", "english": "Read that again. A director saying reality caught up with his fiction.", "action": "强调这件事的反常"}, {"beat": 5, "ppt_guide": "手指 Kate Stables 评论", "english": "Even academics agree. This is not just another movie. It's a 50-year journey — coming true.", "action": "指向主题"}], "full_text": "So this new movie — what makes it different? Spielberg himself said it. Things he once hoped were true — are happening now. Read that again. A director saying reality caught up with his fiction. Even academics agree. This is not just another movie. It's a 50-year journey — coming true.  ---"}, {"num": 9, "title": "Trailer", "beats": [{"beat": 1, "ppt_guide": "看观众", "english": "Let's take a look. The teaser trailer.", "action": "转身面向屏幕"}, {"beat": 2, "ppt_guide": "点击播放预告片", "english": "—", "action": "点击全屏视频"}, {"beat": 3, "ppt_guide": "沉默，让预告片播放", "english": "—", "action": "站旁边，让画面说话"}, {"beat": 4, "ppt_guide": "预告片结束后，看观众", "english": "Does this look like fiction? Or something real?", "action": "挑眉"}], "full_text": "Let's take a look. The teaser trailer.  *[预告片播放，沉默]*  Does this look like fiction? Or something real?  ---"}, {"num": 10, "title": "A Remarkable Coincidence — Or Not?", "beats": [{"beat": 1, "ppt_guide": "手指向左侧引言", "english": "One side says: \"We cannot explain.\"", "action": "指左"}, {"beat": 2, "ppt_guide": "手指向右侧引言", "english": "The other side says: \"We are not alone.\"", "action": "指右"}, {"beat": 3, "ppt_guide": "停顿，看观众", "english": "Now look at the date.", "action": "指中间"}, {"beat": 4, "ppt_guide": "停顿", "english": "Same day.", "action": "砸下来"}, {"beat": 5, "ppt_guide": "看观众", "english": "One billion people watching. Just luck? You decide.", "action": "摊手"}], "full_text": "One side says: \"We cannot explain.\" The other side says: \"We are not alone.\" Now look at the date. Same day. One billion people watching. Just luck? You decide.  ---"}, {"num": 11, "title": "SECTION 3 TRANSITION", "beats": [{"beat": 1, "ppt_guide": "手势收拢", "english": "So — the real world. The movies. Both happening now.", "action": "回顾前两部分"}, {"beat": 2, "ppt_guide": "停顿，看观众", "english": "But here's a harder question.", "action": "转折语气"}, {"beat": 3, "ppt_guide": "手指向副标题", "english": "AI can make anything look real now.", "action": "指副标题"}, {"beat": 4, "ppt_guide": "看观众", "english": "So how do we know what's true?", "action": "摊手"}], "full_text": "So — the real world. The movies. Both happening now. But here's a harder question. AI can make anything look real now. So how do we know what's true?  ---"}, {"num": 12, "title": "When I Became the Creator of \"UFO Evidence\"", "beats": [{"beat": 1, "ppt_guide": "看观众", "english": "Look at this picture. I made it.", "action": "手指向屏幕"}, {"beat": 2, "ppt_guide": "手指向左侧截图", "english": "On the left — how I made it. The tool, the prompt.", "action": "指左"}, {"beat": 3, "ppt_guide": "手指向右侧成品图", "english": "On the right — the result. Looks real, right?", "action": "指右"}, {"beat": 4, "ppt_guide": "停顿，看观众", "english": "I didn't make this for this presentation. I made this two years ago — 2024.", "action": "强调"}, {"beat": 5, "ppt_guide": "竖两根手指", "english": "Two years ago. One minute. That's all it took.", "action": "手指比划"}, {"beat": 6, "ppt_guide": "看观众", "english": "If 2024 could already do this — what about now?", "action": "摊手"}], "full_text": "Look at this picture. I made it. On the left — how I made it. The tool, the prompt. On the right — the result. Looks real, right? I didn't make this for this presentation. I made this two years ago — 2024. One minute. That's all it took. If 2024 could already do this — what about now?  ---"}, {"num": 13, "title": "The 2026 Paradox", "beats": [{"beat": 1, "ppt_guide": "承接 Slide 12，看观众", "english": "It's not just me.", "action": "摇头"}, {"beat": 2, "ppt_guide": "手指向左侧 298", "english": "2026 — 298 real files. Official.", "action": "指左"}, {"beat": 3, "ppt_guide": "手指向右侧 ∞", "english": "But also — fake images. Endless.", "action": "指右"}, {"beat": 4, "ppt_guide": "停顿，看观众", "english": "More truth than ever. More lies than ever.", "action": "双手对比"}, {"beat": 5, "ppt_guide": "手指向底部", "english": "That's the problem.", "action": "指底部"}], "full_text": "It's not just me. 2026 — 298 real files. Official. But also — fake images. Endless. More truth than ever. More lies than ever. That's the problem.  ---"}, {"num": 14, "title": "A Case in Point: When You Can't Tell", "beats": [{"beat": 1, "ppt_guide": "手指向左侧截图", "english": "Look at this. X. Title says: \"Newly released 2026.\"", "action": "指左"}, {"beat": 2, "ppt_guide": "停顿，看观众", "english": "Is it real? Honestly — I can't tell.", "action": "摊手"}, {"beat": 3, "ppt_guide": "手指向来源标签", "english": "Not the government.", "action": "指底部"}, {"beat": 4, "ppt_guide": "看观众", "english": "But the title sounds official. That's how fake news works.", "action": "严肃语气"}], "full_text": "Look at this. X. Title says: \"Newly released 2026.\" Is it real? Honestly — I can't tell. Not the government. But the title sounds official. That's how fake news works.  ---"}, {"num": 15, "title": "Which One Is Real? (Interactive)", "beats": [{"beat": 1, "ppt_guide": "看观众", "english": "Quick test. Two pictures.", "action": "手指向屏幕"}, {"beat": 2, "ppt_guide": "手指向左侧 Image A", "english": "A.", "action": "指左"}, {"beat": 3, "ppt_guide": "手指向右侧 Image B", "english": "B.", "action": "指右"}, {"beat": 4, "ppt_guide": "看观众", "english": "Which one is real? Think.", "action": "等几秒"}, {"beat": 5, "ppt_guide": "手指 Image A 标签", "english": "A is real. Military footage. 2013.", "action": "揭晓"}, {"beat": 6, "ppt_guide": "手指 Image B 标签", "english": "B is fake. AI made.", "action": "指右"}, {"beat": 7, "ppt_guide": "停顿，看观众", "english": "The real one looks messy. The fake one looks perfect.", "action": "对比手势"}, {"beat": 8, "ppt_guide": "看观众", "english": "Too perfect? Be careful.", "action": "手指观众"}], "full_text": "Quick test. Two pictures. A. B. Which one is real? Think.  *[互动等待，约5秒]*  A is real. Military footage. 2013. B is fake. AI made. The real one looks messy. The fake one looks perfect. Too perfect? Be careful.  ---"}, {"num": 16, "title": "A Simple Framework: 3 Steps to Verify（快速过）", "beats": [{"beat": 1, "ppt_guide": "手快速扫过三栏", "english": "Three steps — check the source, cross-check, and it's OK to say \"I don't know.\"", "action": "手一扫而过"}, {"beat": 2, "ppt_guide": "停顿，看观众", "english": "A professor said it best.", "action": "引出引言"}, {"beat": 3, "ppt_guide": "手指底部引言", "english": "If anything can be fake — nothing has to be real.", "action": "慢，砸下来"}], "full_text": "Three steps — check the source, cross-check, and it's OK to say \"I don't know.\" A professor said it best. If anything can be fake — nothing has to be real.  ---"}, {"num": 17, "title": "SECTION 4 TRANSITION", "beats": [{"beat": 1, "ppt_guide": "手势回顾", "english": "OK. We know how to check facts now.", "action": "收束 Section 3"}, {"beat": 2, "ppt_guide": "停顿，看观众", "english": "But here's a deeper question.", "action": "转折"}, {"beat": 3, "ppt_guide": "手指向大标题", "english": "Even when we know the truth — do we share it? Or hide it?", "action": "指标题"}], "full_text": "OK. We know how to check facts now. But here's a deeper question. Even when we know the truth — do we share it? Or hide it?  ---"}, {"num": 18, "title": "Three Logics Behind Disclosure（快速过）", "beats": [{"beat": 1, "ppt_guide": "手快速扫过三栏", "english": "Three reasons — science, security, and trust.", "action": "手一扫而过"}, {"beat": 2, "ppt_guide": "看观众", "english": "Silence creates rumors. Openness builds trust. That's it.", "action": "一句话总结"}, {"beat": 3, "ppt_guide": "手指底部引言", "english": "A strong country is not afraid to say: we don't know.", "action": "指底部"}], "full_text": "Three reasons — science, security, and trust. Silence creates rumors. Openness builds trust. That's it. A strong country is not afraid to say: we don't know.  ---"}, {"num": 19, "title": "The Hangzhou Case: When Information Disappears", "beats": [{"beat": 1, "ppt_guide": "看观众", "english": "Now — a case in China.", "action": "转折语气"}, {"beat": 2, "ppt_guide": "手指向左侧截图", "english": "This is from China Daily. 2010.", "action": "指左，强调来源"}, {"beat": 3, "ppt_guide": "手指向右侧证据①②", "english": "According to this report — airport shut down. Officials knew.", "action": "指右"}, {"beat": 4, "ppt_guide": "手指向证据③", "english": "Social media posts — deleted.", "action": "快速"}, {"beat": 5, "ppt_guide": "停顿，看观众", "english": "16 years. Still no official answer.", "action": "平静，不加评判"}, {"beat": 6, "ppt_guide": "手指底部链接", "english": "You can find this article yourself. It's still online. Link is right there.", "action": "指底部"}], "full_text": "Now — a case in China. This is from China Daily. 2010. According to this report — airport shut down. Officials knew. Social media posts — deleted. 16 years. Still no official answer. You can find this article yourself. It's still online. Link is right there.  ---"}, {"num": 20, "title": "Three Nations, Three Choices", "beats": [{"beat": 1, "ppt_guide": "承接 Slide 19，看观众", "english": "Same thing. Three countries. Three choices.", "action": "翻掌"}, {"beat": 2, "ppt_guide": "手指向左栏 UK", "english": "UK — full transparency. Rumors stopped.", "action": "指左"}, {"beat": 3, "ppt_guide": "手指向中栏 US", "english": "US — took 79 years. But getting there.", "action": "指中"}, {"beat": 4, "ppt_guide": "手指向右栏 Hangzhou", "english": "And Hangzhou — 16 years of silence. 16 years of rumors.", "action": "指右"}, {"beat": 5, "ppt_guide": "停顿，看观众", "english": "Same sky. Different choices.", "action": "双手对比"}, {"beat": 6, "ppt_guide": "看观众", "english": "That tells you everything.", "action": "摊手"}], "full_text": "Same thing. Three countries. Three choices. UK — full transparency. Rumors stopped. US — took 79 years. But getting there. And Hangzhou — 16 years of silence. 16 years of rumors. Same sky. Different choices. That tells you everything.  ---"}, {"num": 21, "title": "CLOSING", "beats": [{"beat": 1, "ppt_guide": "手指向大标题", "english": "We're still waiting.", "action": "看观众"}, {"beat": 2, "ppt_guide": "停顿", "english": "Not just for UFOs.", "action": "摇头"}, {"beat": 3, "ppt_guide": "看观众", "english": "But for a day when we can talk openly — about anything we don't understand.", "action": "手势开放"}, {"beat": 4, "ppt_guide": "停顿，手指底部引言", "english": "The movie said it best.", "action": "指引言"}, {"beat": 5, "ppt_guide": "看观众", "english": "\"The truth belongs to eight billion people.\"", "action": "慢，一字一句"}, {"beat": 6, "ppt_guide": "停顿", "english": "Thank you.", "action": "鞠躬"}], "full_text": "We're still waiting. Not just for UFOs. But for a day when we can talk openly — about anything we don't understand. The movie said it best. \"The truth belongs to eight billion people.\" Thank you.  --- **END — 21 Slides Complete**"}];
+
+const AUDIO_BASE = "audio/";
+let currentAudio = null;
+let currentSlide = null;
+let playbackRate = 1.0;
+
+// Build page
+function buildPage() {
+  const container = document.getElementById('container');
+  container.innerHTML = SLIDES.map((s, i) => `
+    <div class="slide-card" id="slide-${s.num}" onclick="toggleSlide(event, ${s.num})">
+      <div class="slide-header">
+        <span class="slide-num">${String(s.num).padStart(2,'0')}</span>
+        <span class="slide-title">${escHtml(s.title)}</span>
+        <div class="slide-actions" onclick="event.stopPropagation()">
+          <button class="btn-play" id="play-btn-${s.num}" onclick="togglePlay(${s.num})" title="Play / Pause">
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            Play
+          </button>
+        </div>
+        <span class="chevron">&#9654;</span>
+      </div>
+      <div class="slide-body">
+        <div class="ppt-preview">
+          <span class="label">PPT Preview</span>
+          <img src="slides/Slide${String(s.num).padStart(2,'0')}.jpg" 
+               alt="Slide ${s.num}" 
+               style="width:100%;max-width:100%;border-radius:4px"
+               onerror="this.parentElement.innerHTML='<span class=\'label\'>PPT Preview</span>'+escHtml(s.title)">
+        </div>
+        <div class="beats-section">
+          <h3>&#x1F3AC; Beat-by-Beat Script</h3>
+          <table class="beat-table">
+            <thead><tr><th>#</th><th>PPT Guide</th><th>English</th><th>Action</th></tr></thead>
+            <tbody>
+              ${s.beats.map(b => `
+                <tr>
+                  <td class="beat-num">${b.beat}</td>
+                  <td class="beat-ppt">${escHtml(b.ppt_guide)}</td>
+                  <td class="beat-english">${escHtml(b.english)}</td>
+                  <td class="beat-action">${escHtml(b.action)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="flow-section">
+          <h3>&#x1F399; Flowing Full Text</h3>
+          <div class="flow-text" id="flow-${s.num}">
+            ${makeSentences(s.full_text, s.num)}
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function makeSentences(text, slideNum) {
+  if (!text) return '';
+  // Split into sentences, keeping punctuation
+  const parts = text.match(/[^.!?]+[.!?]*\s*/g) || [text];
+  return parts.map((p, i) => {
+    const trimmed = p.trim();
+    if (!trimmed) return '';
+    return `<span class="sentence" id="sent-${slideNum}-${i}" data-slide="${slideNum}" data-idx="${i}">${escHtml(trimmed)}</span> `;
+  }).join('');
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+// Toggle slide expand/collapse
+function toggleSlide(e, num) {
+  // Only toggle if clicking the header itself, not buttons inside
+  const card = document.getElementById('slide-' + num);
+  card.classList.toggle('expanded');
+}
+
+function collapseAll() {
+  document.querySelectorAll('.slide-card').forEach(c => c.classList.remove('expanded'));
+}
+function expandAll() {
+  document.querySelectorAll('.slide-card').forEach(c => c.classList.add('expanded'));
+}
+
+// Playback
+// Highlight tracking
+let highlightRAF = null;
+let sentenceMap = {};  // slideNum -> [{el, charStart, charEnd, charLen}]
+
+function buildSentenceMap(num) {
+  if (sentenceMap[num]) return sentenceMap[num];
+  const container = document.getElementById('flow-' + num);
+  if (!container) return [];
+  const spans = container.querySelectorAll('.sentence');
+  let charPos = 0;
+  const map = [];
+  spans.forEach(span => {
+    const text = span.textContent.trim();
+    const len = text.length;
+    map.push({ el: span, charStart: charPos, charEnd: charPos + len, charLen: len });
+    charPos += len + 1; // +1 for space
+  });
+  sentenceMap[num] = map;
+  return map;
+}
+
+function startHighlightTracking(num) {
+  stopHighlightTracking();
+  const map = buildSentenceMap(num);
+  if (map.length === 0) return;
+  
+  const totalChars = map[map.length - 1].charEnd;
+  let lastIdx = -1;
+  
+  function tick() {
+    if (!currentAudio || currentSlide !== num) {
+      stopHighlightTracking();
+      return;
+    }
+    const progress = currentAudio.duration > 0 ? currentAudio.currentTime / currentAudio.duration : 0;
+    // Map progress (0..1) to character position
+    const charPos = progress * totalChars;
+    // Find matching sentence
+    let idx = 0;
+    for (let i = map.length - 1; i >= 0; i--) {
+      if (charPos >= map[i].charStart) {
+        idx = i;
+        break;
+      }
+    }
+    if (idx !== lastIdx) {
+      // Remove old
+      if (lastIdx >= 0 && map[lastIdx]) map[lastIdx].el.classList.remove('active');
+      // Add new
+      map[idx].el.classList.add('active');
+      // Scroll into view if needed
+      map[idx].el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      lastIdx = idx;
+    }
+    highlightRAF = requestAnimationFrame(tick);
+  }
+  
+  highlightRAF = requestAnimationFrame(tick);
+}
+
+function stopHighlightTracking() {
+  if (highlightRAF) {
+    cancelAnimationFrame(highlightRAF);
+    highlightRAF = null;
+  }
+}
+
+function clearHighlights(num) {
+  stopHighlightTracking();
+  document.querySelectorAll('#flow-' + num + ' .sentence.active').forEach(el => el.classList.remove('active'));
+}
+
+function togglePlay(num) {
+  const btn = document.getElementById('play-btn-' + num);
+  const card = document.getElementById('slide-' + num);
+  
+  if (currentAudio && currentSlide === num && !currentAudio.paused) {
+    // Pause current
+    currentAudio.pause();
+    stopHighlightTracking();
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Play';
+    btn.classList.remove('playing');
+    card.classList.remove('playing');
+    return;
+  }
+  
+  // Stop any existing playback
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    if (currentSlide) {
+      const oldBtn = document.getElementById('play-btn-' + currentSlide);
+      if (oldBtn) {
+        oldBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Play';
+        oldBtn.classList.remove('playing');
+      }
+      const oldCard = document.getElementById('slide-' + currentSlide);
+      if (oldCard) oldCard.classList.remove('playing');
+      clearHighlights(currentSlide);
+    }
+  }
+  
+  // Start new playback
+  const audioPath = getAudioPath(num);
+  currentAudio = new Audio(audioPath);
+  currentAudio.playbackRate = playbackRate;
+  currentSlide = num;
+  
+  currentAudio.onloadeddata = () => {
+    currentAudio.play().catch(e => console.warn('Playback error:', e));
+  };
+  
+  currentAudio.onplay = () => {
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause';
+    btn.classList.add('playing');
+    card.classList.add('playing');
+    // Auto-expand
+    card.classList.add('expanded');
+    // Start sentence tracking
+    startHighlightTracking(num);
+  };
+  
+  currentAudio.onended = () => {
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Play';
+    btn.classList.remove('playing');
+    card.classList.remove('playing');
+    clearHighlights(num);
+    currentAudio = null;
+    currentSlide = null;
+  };
+  
+  currentAudio.onpause = () => {
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Play';
+    btn.classList.remove('playing');
+    card.classList.remove('playing');
+    stopHighlightTracking();
+  };
+  
+  currentAudio.onerror = () => {
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Play';
+    btn.classList.remove('playing');
+    card.classList.remove('playing');
+    stopHighlightTracking();
+    currentAudio = null;
+    currentSlide = null;
+  };
+  
+  // Load
+  currentAudio.load();
+}
+
+// Speed control
+// Multi-voice support
+let voiceManifest = null;
+let currentVoice = "";  // "" = default (audio/ folder), otherwise "Emma", "Guy", etc.
+
+async function loadVoiceManifest() {
+  try {
+    const resp = await fetch('audio/voice_manifest.json');
+    if (resp.ok) {
+      voiceManifest = await resp.json();
+      const selector = document.getElementById('voiceSelector');
+      const voiceNames = Object.keys(voiceManifest);
+      if (voiceNames.length > 0) {
+        selector.innerHTML = '<option value="">Default</option>' +
+          voiceNames.map(v => `<option value="${v}">${voiceManifest[v].name}</option>`).join('');
+        document.getElementById('voiceControl').style.display = 'flex';
+      }
+    }
+  } catch(e) {
+    // No voice manifest — single voice mode, selector stays hidden
+  }
+}
+
+function getAudioBase() {
+  if (currentVoice && voiceManifest && voiceManifest[currentVoice]) {
+    return 'audio/' + voiceManifest[currentVoice].dir + '/';
+  }
+  return 'audio/';
+}
+
+// Rebuild audio path function
+function getAudioPath(num) {
+  return getAudioBase() + 'Slide' + String(num).padStart(2,'0') + '_连贯全文.mp3';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildPage();
+  loadVoiceManifest();
+  
+  const slider = document.getElementById('speedSlider');
+  const label = document.getElementById('speedLabel');
+  slider.addEventListener('input', () => {
+    playbackRate = parseFloat(slider.value);
+    label.textContent = playbackRate.toFixed(2) + 'x';
+    if (currentAudio) {
+      currentAudio.playbackRate = playbackRate;
+    }
+  });
+  
+  const voiceSelector = document.getElementById('voiceSelector');
+  voiceSelector.addEventListener('change', () => {
+    const wasPlaying = currentAudio && !currentAudio.paused;
+    const wasSlide = currentSlide;
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio = null;
+      clearHighlights(currentSlide);
+      const oldBtn = document.getElementById('play-btn-' + currentSlide);
+      if (oldBtn) {
+        oldBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Play';
+        oldBtn.classList.remove('playing');
+      }
+      const oldCard = document.getElementById('slide-' + currentSlide);
+      if (oldCard) oldCard.classList.remove('playing');
+    }
+    currentVoice = voiceSelector.value;
+    currentSlide = null;
+    if (wasPlaying && wasSlide) {
+      setTimeout(() => togglePlay(wasSlide), 100);
+    }
+  });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    const delta = e.key === 'ArrowRight' ? 1 : -1;
+    if (currentSlide) {
+      const nextNum = currentSlide + delta;
+      if (nextNum >= 1 && nextNum <= 21) {
+        togglePlay(nextNum);
+      }
+    }
+  }
+  if (e.key === ' ') {
+    e.preventDefault();
+    if (currentSlide) {
+      togglePlay(currentSlide);
+    }
+  }
+});
+</script>
+</body>
+</html>
