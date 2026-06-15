@@ -1,9 +1,9 @@
 ---
-name: recitation-trainer
-description: Build an interactive English presentation recitation trainer for Chinese speakers. Takes a PPTX file as input and produces a self-contained static HTML web app with slide previews, beat-by-beat oral scripts, TTS audio playback with sentence-level highlighting, and speed control — accessible on both desktop and mobile via Vercel. Use this skill when the user mentions "带读训练器", "英语pre带读", "presentation recitation", "背诵训练", "pre练习", "英文演讲稿熟记", "国际会议pre", "博士生英语pre", "TTS带读", or wants to build a presentation practice tool for academic conferences or doctoral English presentations.
+name: ppt-prepal
+description: Build an interactive English presentation recitation trainer for Chinese speakers. Takes a PPTX file as input and produces a self-contained static HTML web app with slide previews, beat-by-beat oral scripts, TTS audio playback with sentence-level highlighting, and speed control — accessible on both desktop and mobile via Vercel. Use this skill when the user mentions "PPT PrePal", "PPTPrePal", "带读训练器", "英语pre带读", "presentation recitation", "背诵训练", "pre练习", "英文演讲稿熟记", "国际会议pre", "博士生英语pre", "TTS带读", or wants to build a presentation practice tool for academic conferences or doctoral English presentations.
 ---
 
-# Recitation Trainer · 英语 Pre 带读训练器
+# PPT PrePal · 英语 Pre 带读训练器
 
 A complete end-to-end pipeline that turns a PowerPoint presentation into an interactive English recitation practice web app — designed for Chinese PhD students and researchers preparing for international academic conferences.
 

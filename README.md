@@ -1,10 +1,10 @@
-# 🎙️ Recitation Trainer · 英语 Pre 带读训练器
+# 🎙️ PPT PrePal · 英语 Pre 带读训练器
 
 > 一款面向中国博士生的英文 Presentation 带读训练工具。输入 PPT，输出一个带语音跟读、逐句高亮、语速可控的交互式网页。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Codex Ready](https://img.shields.io/badge/Codex-✓-blue)](https://github.com/jiuyuechuwuhao/recitation-trainer)
-[![Claude Code Ready](https://img.shields.io/badge/Claude%20Code-✓-orange)](https://github.com/jiuyuechuwuhao/recitation-trainer)
+[![Codex Ready](https://img.shields.io/badge/Codex-✓-blue)](https://github.com/jiuyuechuwuhao/ppt-prepal)
+[![Claude Code Ready](https://img.shields.io/badge/Claude%20Code-✓-orange)](https://github.com/jiuyuechuwuhao/ppt-prepal)
 
 ---
 
@@ -40,8 +40,8 @@
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/jiuyuechuwuhao/recitation-trainer.git
-cd recitation-trainer
+git clone https://github.com/jiuyuechuwuhao/ppt-prepal.git
+cd ppt-prepal
 
 # 2. 一键环境检测 + 自动安装
 python3 scripts/check_env.py
@@ -103,7 +103,7 @@ python3 scripts/build_trainer.py \
 ## 📂 项目结构
 
 ```
-recitation-trainer/
+ppt-prepal/
 ├── SKILL.md                          # AI 智能体指令（核心）
 ├── README.md                         # 本文件
 ├── scripts/
