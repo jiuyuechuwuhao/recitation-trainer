@@ -432,8 +432,8 @@ git init
 git checkout -b main
 git add .
 git commit -m "Initial recitation trainer deploy"
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
-git push -u origin main
+git remote add origin git@github.com:YOUR_USERNAME/YOUR_REPO.git
+git push -u origin main  # Uses SSH — if SSH not configured, set up with: ssh-keygen -t ed25519 -C "your@email.com" && cat ~/.ssh/id_ed25519.pub (add to GitHub Settings → SSH Keys)
 
 # 2. Enable GitHub Pages via gh CLI
 gh repo edit --pages-source-branch main --pages-source-path /
@@ -496,6 +496,7 @@ These are hard constraints discovered during testing. The AI agent should be awa
 |-------|-----------|--------|
 | `--rate "-8%"` in shell: `%` gets swallowed by argparse | `--rate` default contains `%`, Python's `%%` in help string interferes | **Fixed** (v2.9.1): use `-8` without `%`, append `%` in code |
 | Chinese filenames break `git add` pathspec | Git encodes CJK characters as octal escapes | **Mitigated**: use `git add audio/` (directory glob), or prefer Vercel |
+| HTTPS `git push` to GitHub fails with RPC 400 from China | GitHub blocks large HTTPS POST requests via GFW | **Fixed**: use SSH remote (`git@github.com:...`) instead of HTTPS |
 | Which `python3` has `edge-tts`? | macOS has multiple Pythons; `pip3 install` target ≠ runtime | **Fixed** (v3.0.0): `SYSTEM_PYTHON` now tries `/opt/homebrew/bin/python3` first |
 | PDF font mismatch warnings clutter output | `pdftotext` and `pdftoppm` emit "Syntax Warning: Mismatch between font type" for some Chinese PDFs | **Harmless** — output is fine, just noisy. Ignore. |## Notes for the AI agent
 
