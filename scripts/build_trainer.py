@@ -96,8 +96,17 @@ def compress_images(slides_dir, max_width=1200):
     dir_path = Path(slides_dir)
     mapping = {}  # old_name -> new_name
 
-    for ext in ['*.png', '*.PNG']:
-        for img_path in sorted(dir_path.glob(ext)):
+    png_files = list(dir_path.glob('*.png')) + list(dir_path.glob('*.PNG'))
+    if not png_files:
+        # Check if already compressed (JPEGs exist)
+        jpg_count = len(list(dir_path.glob('*.jpg'))) + len(list(dir_path.glob('*.JPG')))
+        if jpg_count > 0:
+            print(f"  Images already compressed ({jpg_count} JPEGs found). Skipping.")
+        else:
+            print("  No images found to compress.")
+        return mapping
+
+    for img_path in sorted(png_files):
             try:
                 img = Image.open(img_path)
                 if img.mode == 'RGBA':
@@ -113,10 +122,12 @@ def compress_images(slides_dir, max_width=1200):
 
                 new_path = img_path.with_suffix('.jpg')
                 img.save(new_path, 'JPEG', quality=85, optimize=True)
+                orig_size = img_path.stat().st_size / 1024
                 img_path.unlink()  # remove original
+                new_size = new_path.stat().st_size / 1024
                 mapping[img_path.name] = new_path.name
                 print(f"  Compressed: {img_path.name} -> {new_path.name} "
-                      f"({img_path.stat().st_size/1024:.0f}KB -> {new_path.stat().st_size/1024:.0f}KB)")
+                      f"({orig_size:.0f}KB -> {new_size:.0f}KB)")
             except Exception as e:
                 print(f"  Warning: Could not process {img_path.name}: {e}")
 
@@ -203,11 +214,9 @@ def build_html(slides, slides_dir, audio_dir, output_path, template_path=None):
 
     print(f"HTML written: {output_path} ({len(html)} bytes)")
     print(f"  Image extension: .{img_ext}")
-    if audio_sample and isinstance(audio_sample, dict) and audio_sample.get("multi_voice"):
-        print("  Audio: Multi-voice mode (manifest: " + str(audio_sample.get("manifest", "N/A")) + ")")
-    else:
-        sample_info = audio_sample.get("sample", "auto-detected") if isinstance(audio_sample, dict) else (audio_sample or "auto-detected")
-        print("  Audio: Single voice (" + str(sample_info) + ")")
+    # audio sample info (cosmetic)
+    if audio_sample:
+        print("  Audio: detected")
 
     return html
 
